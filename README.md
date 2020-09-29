@@ -56,6 +56,7 @@ Supported backbones:
 - [x] ResNeXt
 - [x] [HRNet](configs/hrnet/README.md)
 - [x] [ResNeSt](configs/resnest/README.md)
+- [x] [MobileNetV2](configs/mobilenet_v2/README.md)
 
 Supported methods:
 - [x] [FCN](configs/fcn)
@@ -72,6 +73,10 @@ Supported methods:
 - [x] [ANN](configs/ann)
 - [x] [OCRNet](configs/ocrnet)
 - [x] [Fast-SCNN](configs/fastscnn)
+- [x] [Semantic FPN](configs/sem_fpn)
+- [x] [PointRend](configs/point_rend)
+- [x] [EMANet](configs/emanet)
+- [x] [DNLNet](configs/dnlnet)
 - [x] [Mixed Precision (FP16) Training](configs/fp16/README.md)
 
 ## Installation
