@@ -4,10 +4,11 @@ from .cityscapes import CityscapesDataset
 from .concrete_damage_as_cityscapes import ConcreteDamageCityScapes
 from .custom import CustomDataset
 from .dataset_wrappers import ConcatDataset, RepeatDataset
+from .pascal_context import PascalContextDataset
 from .voc import PascalVOCDataset
 
 __all__ = [
     'CustomDataset', 'build_dataloader', 'ConcatDataset', 'RepeatDataset',
     'DATASETS', 'build_dataset', 'PIPELINES', 'CityscapesDataset',
-    'PascalVOCDataset', 'ADE20KDataset', 'ConcreteDamageCityScapes'
+    'PascalVOCDataset', 'ADE20KDataset', 'ConcreteDamageCityScapes',  'PascalContextDataset'
 ]
