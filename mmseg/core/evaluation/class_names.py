@@ -1,6 +1,12 @@
 import mmcv
 
 
+def concrete_damage_as_cityscapes_classes(): 
+    return [ 
+         'background', 'crack', 'effl', 'rebar', 'spll',
+    ]
+
+
 def cityscapes_classes():
     """Cityscapes class names for external use."""
     return [
@@ -59,6 +65,9 @@ def cityscapes_palette():
             [255, 0, 0], [0, 0, 142], [0, 0, 70], [0, 60, 100], [0, 80, 100],
             [0, 0, 230], [119, 11, 32]]
 
+def concrete_damage_as_cityscapes_palette(): 
+    return [[0, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 255], [255, 0, 255]]
+
 
 def ade_palette():
     """ADE20K palette for external use."""
@@ -114,7 +123,8 @@ def voc_palette():
 dataset_aliases = {
     'cityscapes': ['cityscapes'],
     'ade': ['ade', 'ade20k'],
-    'voc': ['voc', 'pascal_voc', 'voc12', 'voc12aug']
+    'voc': ['voc', 'pascal_voc', 'voc12', 'voc12aug'],
+    'concrete_damage_as_cityscapes' : ['concrete_damage_as_cityscapes']
 }
 
 
