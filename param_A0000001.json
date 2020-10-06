@@ -1,0 +1,8 @@
+{
+    "ptanFcltsCd" : "BR",
+	"pctrPtgrDstne" : "0.2",
+	"anlyDataId" : "A0000001",
+	"anlyPctrYn" : "Y",
+	"anlyTargetPath" : "/home/uosshm/바탕화면/bridge_crack_detection_test",
+	"anlyResultPath" : "/home/uosshm/바탕화면/bridge_crack_detection_test/result"
+}

@@ -1,0 +1,1 @@
+{"TN": {"lengthPerPixel": 1.0, "damagesToDetect": ["crack", "effl"]}, "BR": {"lengthPerPixel": 0.1, "damagesToDetect": ["crack" ]}, "BP": {"lengthPerPixel": 0.2, "damagesToDetect": ["crack", "spll"]}}
