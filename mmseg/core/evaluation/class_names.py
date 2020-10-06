@@ -3,7 +3,7 @@ import mmcv
 
 def concrete_damage_as_cityscapes_classes(): 
     return [ 
-         'crack', 'effl', 'rebar', 'spll',
+         'background', 'crack', 'effl', 'rebar', 'spll',
     ]
 
 
@@ -66,7 +66,7 @@ def cityscapes_palette():
             [0, 0, 230], [119, 11, 32]]
 
 def concrete_damage_as_cityscapes_palette(): 
-    return [[128, 64, 128], [244, 35, 232], [70, 70, 70], [102, 102, 156]]
+    return [[0, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 255], [255, 0, 255]]
 
 
 def ade_palette():

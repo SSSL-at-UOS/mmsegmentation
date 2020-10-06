@@ -17,9 +17,8 @@ class ConcreteDamageCityScapes(CustomDataset):
     fixed to '_gtFine_labelTrainIds.png' for Cityscapes dataset.
     """
 
-    CLASSES = ('crack', 'effl', 'rebar', 'spll') 
-
-    PALETTE = [[128, 64, 128], [244, 35, 232], [70, 70, 70], [102, 102, 156]]
+    CLASSES = ('background', 'crack', 'effl', 'rebar', 'spll') 
+    PALETTE = [[0, 0, 0], [255, 0, 0], [0, 255, 0], [0, 255, 255], [255, 0, 255]]
 
     def __init__(self, **kwargs):
         super(ConcreteDamageCityScapes, self).__init__(
@@ -66,12 +65,7 @@ class ConcreteDamageCityScapes(CustomDataset):
             png_filename = osp.join(imgfile_prefix, f'{basename}.png')
 
             output = Image.fromarray(result.astype(np.uint8)).convert('P')
-            import cityscapesscripts.helpers.labels as CSLabels
-            palette = np.zeros((len(CSLabels.id2label), 3), dtype=np.uint8)
-            for label_id, label in CSLabels.id2label.items():
-                palette[label_id] = label.color
-
-            output.putpalette(palette)
+            output.putpalette(np.asarray(self.palette, dtype=np.uint8))
             output.save(png_filename)
             result_files.append(png_filename)
             prog_bar.update()

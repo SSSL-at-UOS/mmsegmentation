@@ -1,0 +1,7 @@
+./tools/dist_test.sh /home/soojin/mmsegmentation/checkpoints/2020.09.02_deeplabv3plus_r50-d8_769x769_40k_concrete_damage_cs/deeplabv3plus_r50-d8_769x769_40k_concrete_damage_cs.py \
+    /home/soojin/mmsegmentation/checkpoints/2020.09.02_deeplabv3plus_r50-d8_769x769_40k_concrete_damage_cs/iter_40000.pth \
+    4 --format-only --options "imgfile_prefix=/home/soojin/mmsegmentation/work_dirs/deeplabv3plus_r101-d8_1024x1024_40k_concrete_damage_cs/results"
+
+python tools/test.py work_dirs/deeplabv3plus_r101-d8_1024x1024_40k_concrete_damage_cs/deeplabv3plus_r101-d8_1024x1024_40k_concrete_damage_cs.py \
+    work_dirs/deeplabv3plus_r101-d8_1024x1024_40k_concrete_damage_cs/iter_40000.pth \
+--show-dir /home/soojin/mmsegmentation/work_dirs/deeplabv3plus_r101-d8_1024x1024_40k_concrete_damage_cs/results
