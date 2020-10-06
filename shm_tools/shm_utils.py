@@ -5,13 +5,12 @@ import os
 import glob
 import numpy as np
 import slidingwindow as sw
-import pycocotools.mask as maskUtils
 import math
 
-
+from mmseg.apis import inference_segmentor
 from tqdm import tqdm
 from slidingwindow import SlidingWindow
-from mmdet.apis import init_detector, inference_detector
+# from mmdet.apis import init_detector, inference_detector
 from skimage.measure import label, regionprops_table
 
 
@@ -42,9 +41,8 @@ def imwrite(filename, imageRGB, params=None):
         print(e)
         return False
 
-
-def inference_detector_sliding_window(model, input_img, color_mask,
-                                      score_thr = 0.1, window_size = 1024, overlap_ratio = 0.5,):
+def inference_segmentor_sliding_window(model, input_img, color_mask, num_classes,
+                                      score_thr = 0.1, window_size = 1024, overlap_ratio = 0.1,):
 
 
     '''
@@ -66,51 +64,26 @@ def inference_detector_sliding_window(model, input_img, color_mask,
 
     # color mask has to be updated for multiple-class object detection
     if isinstance(input_img, str) :
-        img = imread(input_img)
+        img = mmcv.imread(input_img)
     else :
         img = input_img
 
     # Generate the set of windows, with a 256-pixel max window size and 50% overlap
     windows = sw.generate(img, sw.DimOrder.HeightWidthChannel, window_size, overlap_ratio)
-    mask_output = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+    mask_output = np.zeros((img.shape[0], img.shape[1], num_classes), dtype=np.uint8)
 
     if isinstance(input_img, str) :
         tqdm_window = tqdm(windows, ascii=True, desc='inference by sliding window on ' + os.path.basename(input_img))
     else :
         tqdm_window = tqdm(windows, ascii=True, desc='inference by sliding window ')
 
-
     for window in tqdm_window :
         # Add print option for sliding window detection
         img_subset = img[window.indices()]
-        img_shorter_axis_length = np.min((img_subset.shape[0], img_subset.shape[1]))
+        results = inference_segmentor(model, img_subset)[0]
+        results_onehot = (np.arange(num_classes) == results[...,None]-1).astype(int)
 
-        scale_percent = 1024 / img_shorter_axis_length  # percent of original size
-        width = int(img_subset.shape[1] * scale_percent)
-        height = int(img_subset.shape[0] * scale_percent)
-        dim = (width, height)
-        img_subset_resize = cv2.resize(img_subset, dim)
-
-        results = inference_detector(model, img_subset_resize)
-        bbox_result, segm_result = results
-        mask_sum = np.zeros((img_subset_resize.shape[0], img_subset_resize.shape[1]), dtype=np.uint8)
-        bboxes = np.vstack(bbox_result) # bboxes
-
-        # draw segmentation masks
-        if segm_result is not None:
-            segms = mmcv.concat_list(segm_result)
-            inds = np.where(bboxes[:, -1] > score_thr)[0]
-
-            for i in inds:
-                mask = segms[i].astype(np.uint8)
-                mask_sum = mask_sum + mask
-
-
-        dim = (img_subset.shape[1], img_subset.shape[0])
-        mask_sum = mask_sum.astype(np.uint8)
-        mask_sum = cv2.resize(mask_sum, dim)
-
-        mask_output[window.indices()] = mask_output[window.indices()] + mask_sum
+        mask_output[window.indices()] = mask_output[window.indices()] + results_onehot
 
     mask_output[mask_output > 1] = 1
 
@@ -118,10 +91,91 @@ def inference_detector_sliding_window(model, input_img, color_mask,
 
     # Add colors to detection result on img
     img_result = img
-    img_result[mask_output_bool, :] = img_result[mask_output_bool,:] * 0.3 + color_mask * 0.6
+    for num in range(num_classes) :
+        img_result[mask_output_bool[:,:,num], :] = img_result[mask_output_bool[:,:,num],:] * 0.3 + np.asarray(color_mask[num], dtype = np.float) * 0.6
 
     return img_result, mask_output
 
+
+# def inference_detector_sliding_window(model, input_img, color_mask,
+#                                       score_thr = 0.1, window_size = 1024, overlap_ratio = 0.5,):
+#
+#
+#     '''
+#     :param model: is a mmdetection model object
+#     :param input_img : str or numpy array
+#                     if str, run imread from input_img
+#     :param score_thr: is float number between 0 and 1.
+#                    Bounding boxes with a confidence higher than score_thr will be displayed,
+#                    in 'img_result' and 'mask_output'.
+#     :param window_size: is a subset size to be detected at a time.
+#                         default = 1024, integer number
+#     :param overlap_ratio: is a overlap size.
+#                         If you overlap sliding windows by 50%, overlap_ratio is 0.5.
+#
+#     :return: img_result
+#     :return: mask_output
+#
+#     '''
+#
+#     # color mask has to be updated for multiple-class object detection
+#     if isinstance(input_img, str) :
+#         img = imread(input_img)
+#     else :
+#         img = input_img
+#
+#     # Generate the set of windows, with a 256-pixel max window size and 50% overlap
+#     windows = sw.generate(img, sw.DimOrder.HeightWidthChannel, window_size, overlap_ratio)
+#     mask_output = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+#
+#     if isinstance(input_img, str) :
+#         tqdm_window = tqdm(windows, ascii=True, desc='inference by sliding window on ' + os.path.basename(input_img))
+#     else :
+#         tqdm_window = tqdm(windows, ascii=True, desc='inference by sliding window ')
+#
+#
+#     for window in tqdm_window :
+#         # Add print option for sliding window detection
+#         img_subset = img[window.indices()]
+#         img_shorter_axis_length = np.min((img_subset.shape[0], img_subset.shape[1]))
+#
+#         scale_percent = 1024 / img_shorter_axis_length  # percent of original size
+#         width = int(img_subset.shape[1] * scale_percent)
+#         height = int(img_subset.shape[0] * scale_percent)
+#         dim = (width, height)
+#         img_subset_resize = cv2.resize(img_subset, dim)
+#
+#         results = inference_detector(model, img_subset_resize)
+#         bbox_result, segm_result = results
+#         mask_sum = np.zeros((img_subset_resize.shape[0], img_subset_resize.shape[1]), dtype=np.uint8)
+#         bboxes = np.vstack(bbox_result) # bboxes
+#
+#         # draw segmentation masks
+#         if segm_result is not None:
+#             segms = mmcv.concat_list(segm_result)
+#             inds = np.where(bboxes[:, -1] > score_thr)[0]
+#
+#             for i in inds:
+#                 mask = segms[i].astype(np.uint8)
+#                 mask_sum = mask_sum + mask
+#
+#
+#         dim = (img_subset.shape[1], img_subset.shape[0])
+#         mask_sum = mask_sum.astype(np.uint8)
+#         mask_sum = cv2.resize(mask_sum, dim)
+#
+#         mask_output[window.indices()] = mask_output[window.indices()] + mask_sum
+#
+#     mask_output[mask_output > 1] = 1
+#
+#     mask_output_bool = mask_output.astype(np.bool)
+#
+#     # Add colors to detection result on img
+#     img_result = img
+#     img_result[mask_output_bool, :] = img_result[mask_output_bool,:] * 0.3 + color_mask * 0.6
+#
+#     return img_result, mask_output
+#
 
 def connect_cracks(mask_output, epsilon = 200):
     '''
