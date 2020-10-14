@@ -42,7 +42,7 @@ def imwrite(filename, imageRGB, params=None):
         return False
 
 def inference_segmentor_sliding_window(model, input_img, color_mask, num_classes,
-                                      score_thr = 0.1, window_size = 1024, overlap_ratio = 0.1,):
+                                       window_size = 1024, overlap_ratio = 0.1, area_thr = 100):
 
 
     '''
@@ -64,7 +64,7 @@ def inference_segmentor_sliding_window(model, input_img, color_mask, num_classes
 
     # color mask has to be updated for multiple-class object detection
     if isinstance(input_img, str) :
-        img = mmcv.imread(input_img)
+        img = imread(input_img)
     else :
         img = input_img
 
@@ -79,8 +79,12 @@ def inference_segmentor_sliding_window(model, input_img, color_mask, num_classes
 
     for window in tqdm_window :
         # Add print option for sliding window detection
+
         img_subset = img[window.indices()]
-        results = inference_segmentor(model, img_subset)[0]
+        subset_size = (img_subset.shape[1], img_subset.shape[0])
+        img_subset_resize = cv2.resize(img_subset, (1024, 1024))
+        results = inference_segmentor(model, img_subset_resize)[0]
+        results = cv2.resize(np.asarray(results, dtype=np.uint8), subset_size, interpolation=cv2.INTER_NEAREST )
         results_onehot = (np.arange(num_classes) == results[...,None]-1).astype(int)
 
         mask_output[window.indices()] = mask_output[window.indices()] + results_onehot
@@ -89,7 +93,7 @@ def inference_segmentor_sliding_window(model, input_img, color_mask, num_classes
 
     mask_output_bool = mask_output.astype(np.bool)
 
-    # Add colors to detection result on img
+        # Add colors to detection result on img
     img_result = img
     for num in range(num_classes) :
         img_result[mask_output_bool[:,:,num], :] = img_result[mask_output_bool[:,:,num],:] * 0.3 + np.asarray(color_mask[num], dtype = np.float) * 0.6
@@ -295,14 +299,14 @@ def connect_cracks(mask_output, epsilon = 200):
                 connect_idx = np.argmin(distance_list)
                 connect_e2 = connect_candidates_e2[connect_idx]
                 connect_e1 = connect_candidates_e1[connect_idx]
-                connect_line_img = cv2.line(connect_line_img, connect_e2, connect_e1, color, 8)
+                connect_line_img = cv2.line(connect_line_img, connect_e2, connect_e1, color, 2)
 
     mask_output = mask_output + connect_line_img
     mask_output[mask_output > 1] = 1
 
     return mask_output
 
-def remove_cracks(mask_output, threshold = 300):
+def remove_small_obj(mask_output, threshold = 300):
     '''
     :param mask_output: a numpy uint8 variable
     :param threshold: cracks of which length is under thershold will be removed.
