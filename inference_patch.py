@@ -136,7 +136,8 @@ for img_path in img_path_list:
                         dmg_info['id'] = str(label_num)
                         dmg_info['length'] = str(np.sum(skel) * lenPerPixel)
                         dmg_info['width'] = width
-                        dmg_info['area'] = []
+                        dmg_info['height'] = ""
+                        dmg_info['area'] = ""
                         dmg_info['coords'] = coords
 
                     else:
@@ -148,6 +149,7 @@ for img_path in img_path_list:
 
                         dmg_info['damage_type'] = damage_type
                         dmg_info['id'] = str(label_num)
+                        dmg_info['length'] = ""
                         dmg_info['width'] = str((max_col - min_col) * lenPerPixel)
                         dmg_info['height'] = str((max_row - min_row) * lenPerPixel)
                         dmg_info['area'] = str((max_col - min_col) * (max_row - min_row) * lenPerPixel * lenPerPixel)

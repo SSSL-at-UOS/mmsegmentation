@@ -5,8 +5,10 @@ import cv2
 import numpy as np
 import os.path as osp
 
+
 from shm_tools.shm_utils import imread, imwrite
 from subprocess import call
+from pathlib import Path
 
 # read inference configuration json file
 parser = argparse.ArgumentParser()
@@ -15,10 +17,12 @@ parser.add_argument("pixel_len")
 parser.add_argument("save_result")
 args = parser.parse_args()
 
-img_folder = r'C:\Users\shdik\OneDrive\바탕 화면\kcqr'
-
-
 img_folder = args.img_folder_name
+lenPerPixel = np.float32(args.pixel_len)
+save_result = args.save_result
+
+call(['python', 'inference_patch.py', str(img_folder), str(lenPerPixel), str(save_result)])
+
 header_info_path = osp.join(img_folder, 'header', 'info.txt')
 header_img_path = osp.join(img_folder, 'header', 'img.jpg')
 json_folder = osp.join(img_folder, 'json')
@@ -62,13 +66,9 @@ for header_ in header_info[1:]:
     concat_img[header['start_y_point']:header['start_y_point']+header['height'],
     header['start_x_point']:header['start_x_point']+header['width'],:] = imread(result_filename)
 
+Path(concat_folder).mkdir(parents=True, exist_ok=True)
 header_img = imread(header_img_path)
 concat_img_resize = cv2.resize(concat_img, (header_img.shape[:2][::-1]))
 imwrite(osp.join(concat_folder, 'img.jpg'), concat_img_resize)
-
 with open(osp.join(concat_folder, 'info.json'), 'w') as json_file :
     json.dump(concat_json, json_file)
-
-
-
-
